@@ -1,0 +1,36 @@
+﻿<Window x:Class="AttributeWrangler.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AttributeWrangler"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="635.132" Width="739.316">
+    <Grid>
+        <Label x:Name="label" Content="Object Filter" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,38,0,0"/>
+        <TextBox x:Name="txtValuePattern" HorizontalAlignment="Left" Height="23" Margin="107,176,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149"/>
+        <Label x:Name="label1" Content="Attribute Name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtAttributePattern" HorizontalAlignment="Left" Height="23" Margin="107,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="cmbObjectFilter" HorizontalAlignment="Left" Margin="107,42,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0">
+            <ComboBoxItem Content="List" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="Descendants" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="Area" HorizontalAlignment="Left" Width="118" Selected="ComboBoxItem_Selected"/>
+        </ComboBox>
+        <CheckBox x:Name="chkInstances" Content="Instance" HorizontalAlignment="Left" Margin="112,69,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <CheckBox x:Name="chkTemplates" Content="Template" HorizontalAlignment="Left" Margin="112,84,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8"/>
+        <Label x:Name="label_Copy" Content="Action" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,105,0,0"/>
+        <RadioButton x:Name="radFind" Content="Find" HorizontalAlignment="Left" Margin="107,111,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <RadioButton x:Name="radFindReplace" Content="Find-Replace" HorizontalAlignment="Left" Margin="107,126,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radFindUpdate" Content="Find-Update" HorizontalAlignment="Left" Margin="107,141,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radUpdate" Content="Update" HorizontalAlignment="Left" Margin="107,156,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="button" Content="..." HorizontalAlignment="Left" Margin="232,42,0,0" VerticalAlignment="Top" Width="24" Height="22"/>
+        <TextBox x:Name="txtReplaceValue" HorizontalAlignment="Left" Height="23" Margin="107,204,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149"/>
+        <Label x:Name="label_Copy1" Content="Find value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,172,0,0"/>
+        <Label x:Name="label_Copy2" Content="Replace value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,200,0,0"/>
+        <ListBox x:Name="lstObjects" Height="262" Margin="261,0,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="107,232,0,0" VerticalAlignment="Top" Width="75" Click="btnGo_Click"/>
+        <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="188,235,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8"/>
+        <TextBox x:Name="txtLog" Margin="0,262,0,0" TextWrapping="Wrap"/>
+
+    </Grid>
+</Window>
