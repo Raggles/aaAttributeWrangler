@@ -5,17 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AttributeWrangler"
         mc:Ignorable="d"
-        Title="LogInWindow" Height="184.963" Width="275.187">
+        Title="Log in to Galaxy" Height="184.963" Width="275.187" WindowStartupLocation="CenterScreen">
     <Grid>
         <Label x:Name="label" Content="Galaxy Node" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txtGalaxyNode" HorizontalAlignment="Left" Height="23" Margin="92,14,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="164" LostFocus="txtGalaxyNode_LostFocus" TextChanged="txtGalaxyNode_TextChanged"/>
+        <TextBox x:Name="txtGalaxyNode" HorizontalAlignment="Left" Height="23" Margin="92,14,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="164" IsEnabled="False"/>
         <Label x:Name="label_Copy" Content="Galaxy" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="txtUsername" HorizontalAlignment="Left" Height="23" Margin="92,69,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="164"/>
         <TextBox x:Name="txtPassword" HorizontalAlignment="Left" Height="23" Margin="92,97,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="164"/>
         <Label x:Name="label_Copy1" Content="Username" HorizontalAlignment="Left" Margin="10,66,0,0" VerticalAlignment="Top"/>
         <Label x:Name="label_Copy2" Content="Password" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btnLogin" Content="Login" HorizontalAlignment="Left" Margin="92,125,0,0" VerticalAlignment="Top" Width="164" Click="btnLogin_Click"/>
-        <TextBox x:Name="txtGalaxy" HorizontalAlignment="Left" Height="23" Margin="92,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="164"/>
+        <Button x:Name="btnLogin" Content="Login" HorizontalAlignment="Left" Margin="92,125,0,0" VerticalAlignment="Top" Width="164" Click="LoginButton_Click"/>
+        <TextBox x:Name="txtGalaxy" Text="" HorizontalAlignment="Left" Height="23" Margin="92,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="164"/>
 
     </Grid>
 </Window>

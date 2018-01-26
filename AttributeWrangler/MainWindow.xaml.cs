@@ -23,29 +23,26 @@ namespace AttributeWrangler
     public partial class MainWindow : Window
     {
         IGalaxy _galaxy;
+        GRAccessApp _grAccess;
+        private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private Dictionary<int, ArchestrAObject> Objects = new Dictionary<int, ArchestrAObject>();
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        public MainWindow(IGalaxy galaxy)
+        public MainWindow(GRAccessApp grAccess, IGalaxy galaxy)
         {
             _galaxy = galaxy;
+            _grAccess = grAccess;
             InitializeComponent();
-            Log(string.Format("Connected to galaxy {0}", galaxy.Name));
+            _log.Info(string.Format("Connected to galaxy {0}", galaxy.Name));
         }
 
-        private void Log(string message)
+        private List<ArchestrAObject> GetObjectList()
         {
-            txtLog.AppendText(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + ": " + message + Environment.NewLine);
-        }
-
-
-
-        private List<aaObject> GetObjectList()
-        {
-            return null;
+            return Objects.Values.ToList();
         }
 
         private void btnGo_Click(object sender, RoutedEventArgs e)
@@ -55,134 +52,384 @@ namespace AttributeWrangler
 
         private void Go(bool whatif)
         {
+
             var objects = GetObjectList();
-            //filter instances or templates
 
             foreach (var obj in objects)
             {
-                if (obj.IsTemplate)
+                try
                 {
-                    string[] tagname = new string[] { obj.Name };
-                    IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsTemplate, ref tagname);
-                    ICommandResult cmd = _galaxy.CommandResult;
-                    if (!cmd.Successful)
+                    if (obj.IsTemplate)
                     {
-                        Log("QueryObjectsByName Failed for $UserDefined Template :" + cmd.Text + " : " + cmd.CustomMessage);
-                        continue;
-                    }
-                    ITemplate userDefinedTemplate = (ITemplate)queryResult[1];//can throw errors here
-                    if (userDefinedTemplate.CheckoutStatus != ECheckoutStatus.notCheckedOut)
-                    {
-                        Log(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, userDefinedTemplate.checkedOutBy));
-                        continue;
-                    }
-                    userDefinedTemplate.CheckOut();
-
-                    IAttributes attrs = userDefinedTemplate.ConfigurableAttributes;
-                    //put all of the attributes into a dictionary so we can do linq queries
-                    Dictionary<string, IAttribute> attributes = new Dictionary<string, IAttribute>();
-                    Dictionary<string, IAttribute> filteredAttributes = new Dictionary<string, IAttribute>();
-                    foreach (IAttribute attribute in attrs)
-                    {
-                        //there will be duplicates, but not for what we are interested in
-                        if (!attributes.ContainsKey(attribute.Name))
-                            attributes.Add(attribute.Name, attribute);
-                    }
-                    //filter attributes here
-                    Regex regex = new Regex(txtAttributePattern.Text);
-
-                    foreach (var kvp in attributes)
-                    {
-                        if (regex.IsMatch(kvp.Key))
+                        string[] tagname = new string[] { obj.Name };
+                        IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsTemplate, ref tagname);
+                        ICommandResult cmd = _galaxy.CommandResult;
+                        if (!cmd.Successful)
                         {
-                            filteredAttributes.Add(kvp.Key, kvp.Value);
+                            _log.Warn("QueryObjectsByName Failed for $UserDefined Template :" + cmd.Text + " : " + cmd.CustomMessage);
+                            continue;
                         }
+                        ITemplate userDefinedTemplate = (ITemplate)queryResult[1];//can throw errors here
+                        if (userDefinedTemplate.CheckoutStatus != ECheckoutStatus.notCheckedOut)
+                        {
+                            _log.Warn(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, userDefinedTemplate.checkedOutBy));
+                            continue;
+                        }
+                        userDefinedTemplate.CheckOut();
+
+                        IAttributes attrs = userDefinedTemplate.ConfigurableAttributes;
+                        //put all of the attributes into a dictionary so we can do linq queries
+                        Dictionary<string, IAttribute> attributes = new Dictionary<string, IAttribute>();
+                        Dictionary<string, IAttribute> filteredAttributes = new Dictionary<string, IAttribute>();
+                        foreach (IAttribute attribute in attrs)
+                        {
+                            //there will be duplicates, but not for what we are interested in
+                            if (!attributes.ContainsKey(attribute.Name))
+                                attributes.Add(attribute.Name, attribute);
+                        }
+                        //filter attributes here
+                        Regex regex = new Regex(txtAttributePattern.Text);
+
+                        foreach (var kvp in attributes)
+                        {
+                            if (regex.IsMatch(kvp.Key))
+                            {
+                                filteredAttributes.Add(kvp.Key, kvp.Value);
+                            }
+                        }
+                        ApplyActions(obj, filteredAttributes, whatif);
+                        userDefinedTemplate.Save();
+                        userDefinedTemplate.CheckIn();
                     }
-                    ApplyActions(obj, filteredAttributes, whatif);
-                    userDefinedTemplate.Save();
-                    userDefinedTemplate.CheckIn();
+                    else
+                    {
+                        string[] tagname = new string[] { obj.Name };
+                        IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsInstance, ref tagname);
+                        ICommandResult cmd = _galaxy.CommandResult;
+                        if (!cmd.Successful)
+                        {
+                            _log.Warn("QueryObjectsByName Failed for $UserDefined Template :" + cmd.Text + " : " + cmd.CustomMessage);
+                            continue;
+                        }
+                        IInstance userDefinedTemplate = (IInstance)queryResult[1];//can throw errors here
+                        if (userDefinedTemplate.CheckoutStatus != ECheckoutStatus.notCheckedOut)
+                        {
+                            _log.Warn(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, userDefinedTemplate.checkedOutBy));
+                            continue;
+                        }
+                        userDefinedTemplate.CheckOut();
+
+                        IAttributes attrs = userDefinedTemplate.ConfigurableAttributes;
+                        //put all of the attributes into a dictionary so we can do linq queries
+                        Dictionary<string, IAttribute> attributes = new Dictionary<string, IAttribute>();
+                        Dictionary<string, IAttribute> filteredAttributes = new Dictionary<string, IAttribute>();
+                        foreach (IAttribute attribute in attrs)
+                        {
+                            //there will be duplicates, but not for what we are interested in
+                            if (!attributes.ContainsKey(attribute.Name))
+                                attributes.Add(attribute.Name, attribute);
+                        }
+                        //filter attributes here
+                        Regex regex = new Regex(txtAttributePattern.Text);
+
+                        foreach (var kvp in attributes)
+                        {
+                            if (regex.IsMatch(kvp.Key))
+                            {
+                                filteredAttributes.Add(kvp.Key, kvp.Value);
+                            }
+                        }
+                        try
+                        {
+                            ApplyActions(obj, filteredAttributes, whatif);
+                            userDefinedTemplate.Save();
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error(ex.ToString());
+                        }
+                        userDefinedTemplate.CheckIn();
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _log.Error(ex.ToString());
+                }
+
             }
 
-            
         }
-        private void ApplyActions(aaObject obj, Dictionary<string, IAttribute> attributes, bool whatif)
+
+        private void ApplyActions(ArchestrAObject obj, Dictionary<string, IAttribute> attributes, bool whatif)
         {
             foreach (var kvp in attributes)
             {
-                if (radFind.IsChecked == true)
+                try
                 {
-
-                }
-                else if (radFindReplace.IsChecked == true)
-                {
-                    var dt = kvp.Value.value.GetDataType();
-                    if (dt == MxDataType.MxReferenceType)
+                    if (radFind.IsChecked == true)
                     {
-                        IMxReference mxref = kvp.Value.value.GetMxReference();
-                        if (mxref.FullReferenceString.Contains(txtValuePattern.Text))
+                        _log.Info(string.Format("Found matching attribute [{0}] on object [{1}] with data type [{2}] and value [{3}]", kvp.Key, obj.Name, kvp.Value.DataType.ToString(), kvp.Value.value.GetString()));
+                    }
+                    else if (radFindReplace.IsChecked == true)
+                    {
+                        switch (kvp.Value.DataType)
                         {
+                            case MxDataType.MxReferenceType:
+                                IMxReference mxref = kvp.Value.value.GetMxReference();
+                                if (mxref.FullReferenceString.Contains(txtValuePattern.Text))
+                                {
+                                    mxref.FullReferenceString = mxref.FullReferenceString.Replace(txtValuePattern.Text, txtReplaceValue.Text);
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), mxref.FullReferenceString));
+                                    if (!whatif)
+                                    {
+                                        MxValue mxval = new MxValueClass();
+                                        mxval.PutMxReference(mxref);
+                                        kvp.Value.SetValue(mxval);
+                                    }
+                                }
+                                break;
 
-                            mxref.FullReferenceString = mxref.FullReferenceString.Replace(txtValuePattern.Text, txtReplaceValue.Text);
-                            Log(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), mxref.FullReferenceString));
-                            if (!whatif)
-                            {
-                                MxValue val = new MxValueClass();
-                                val.PutMxReference(mxref);
-                                kvp.Value.SetValue(val);
-                            }
+                            case MxDataType.MxString:
+                                string strval = kvp.Value.value.GetString();
+                                if (strval.Contains(txtValuePattern.Text))
+                                {
+                                    string newStr = strval.Replace(txtValuePattern.Text, txtReplaceValue.Text);
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), newStr));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutString(newStr);
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                        }
+
+
+                    }
+                    else if (radFindUpdate.IsChecked == true)
+                    {
+                        switch (kvp.Value.DataType)
+                        {
+                            case MxDataType.MxReferenceType:
+                                IMxReference mxref = kvp.Value.value.GetMxReference();
+                                if (mxref.FullReferenceString == txtValuePattern.Text)
+                                {
+                                    mxref.FullReferenceString = txtReplaceValue.Text;
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), mxref.FullReferenceString));
+                                    if (!whatif)
+                                    {
+                                        MxValue mxval = new MxValueClass();
+                                        mxval.PutMxReference(mxref);
+                                        kvp.Value.SetValue(mxval);
+                                    }
+                                }
+                                break;
+
+                            case MxDataType.MxString:
+                                string strval = kvp.Value.value.GetString();
+                                if (strval == txtValuePattern.Text)
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutString(txtReplaceValue.Text);
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                            case MxDataType.MxInteger:
+                                int intVal = kvp.Value.value.GetInteger();
+                                if (intVal == int.Parse(txtValuePattern.Text))
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutInteger(int.Parse(txtReplaceValue.Text));
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                            case MxDataType.MxFloat:
+                                float floatVal = kvp.Value.value.GetFloat();
+                                if (floatVal == int.Parse(txtValuePattern.Text))
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutFloat(float.Parse(txtReplaceValue.Text));
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                            case MxDataType.MxDouble:
+                                double doubleVal = kvp.Value.value.GetDouble();
+                                if (doubleVal == int.Parse(txtValuePattern.Text))
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutDouble(double.Parse(txtReplaceValue.Text));
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                            case MxDataType.MxBoolean:
+                                bool boolVal = kvp.Value.value.GetBoolean();
+                                if (boolVal == bool.Parse(txtValuePattern.Text))
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutBoolean(bool.Parse(txtReplaceValue.Text));
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
                         }
                     }
-                    else if (dt == MxDataType.MxString)
+                    else if (radUpdate.IsChecked == true)
                     {
-                        string val = kvp.Value.value.GetString();
-                        if (val.Contains(txtValuePattern.Text))
+                        switch (kvp.Value.DataType)
                         {
-                            string newStr = val.Replace(txtValuePattern.Text, txtReplaceValue.Text);
-                            Log(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), val));
-                            if (!whatif)
-                            {
-                                MxValue newVal = new MxValueClass();
-                                newVal.PutString(newStr);
-                                kvp.Value.SetValue(newVal);
-                            }
+                            case MxDataType.MxReferenceType:
+                                IMxReference mxref = kvp.Value.value.GetMxReference();
+                                mxref.FullReferenceString = txtReplaceValue.Text;
+                                _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), mxref.FullReferenceString));
+                                if (!whatif)
+                                {
+                                    MxValue mxval = new MxValueClass();
+                                    mxval.PutMxReference(mxref);
+                                    kvp.Value.SetValue(mxval);
+                                }
+                                break;
+
+                            case MxDataType.MxString:
+                                string strval = kvp.Value.value.GetString();
+                                string newStr = txtReplaceValue.Text;
+                                _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), newStr));
+                                if (!whatif)
+                                {
+                                    MxValue newVal = new MxValueClass();
+                                    newVal.PutString(newStr);
+                                    kvp.Value.SetValue(newVal);
+                                }
+                                break;
+                            case MxDataType.MxInteger:
+                                int intVal = kvp.Value.value.GetInteger();
+                                if (intVal == int.Parse(txtValuePattern.Text))
+                                {
+                                    _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                    if (!whatif)
+                                    {
+                                        MxValue newVal = new MxValueClass();
+                                        newVal.PutInteger(int.Parse(txtReplaceValue.Text));
+                                        kvp.Value.SetValue(newVal);
+                                    }
+                                }
+                                break;
+                            case MxDataType.MxFloat:
+                                float floatVal = kvp.Value.value.GetFloat();
+                                _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                if (!whatif)
+                                {
+                                    MxValue newVal = new MxValueClass();
+                                    newVal.PutFloat(float.Parse(txtReplaceValue.Text));
+                                    kvp.Value.SetValue(newVal);
+                                }
+                                break;
+                            case MxDataType.MxDouble:
+                                double doubleVal = kvp.Value.value.GetDouble();
+                                _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                if (!whatif)
+                                {
+                                    MxValue newVal = new MxValueClass();
+                                    newVal.PutDouble(double.Parse(txtReplaceValue.Text));
+                                    kvp.Value.SetValue(newVal);
+                                }
+                                break;
+                            case MxDataType.MxBoolean:
+                                bool boolVal = kvp.Value.value.GetBoolean();
+                                _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", kvp.Key, obj.Name, kvp.Value.value.GetString(), txtReplaceValue.Text));
+                                if (!whatif)
+                                {
+                                    MxValue newVal = new MxValueClass();
+                                    newVal.PutBoolean(bool.Parse(txtReplaceValue.Text));
+                                    kvp.Value.SetValue(newVal);
+                                }
+                                break;
                         }
                     }
-                    
-
                 }
-                else if (radFindUpdate.IsChecked == true)
+                catch (Exception ex)
                 {
-
+                    _log.Error(string.Format("Error while processing attribute {0} : {1}", kvp.Key, ex.ToString()));
                 }
-                else if (radUpdate.IsChecked == true)
+            }
+        }
+        
+        private void btnAddFromDerivationTree_Click(object sender, RoutedEventArgs e)
+        {
+            var form = new ObjectPicker(_galaxy.Name, PickerMode.List);
+            var result = form.ShowDialog();
+            if (result == true)
+            {
+                foreach (var item in form.Result)
                 {
+                    if (!Objects.ContainsKey(item.ObjectID))
+                    {
+                        Objects.Add(item.ObjectID, item);
+                        lstObjects.Items.Add(item);
+                    }
+                }
 
+            }
+        }
+
+        private void btnAdvancedSearch_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AdvancedSearch("localhost", _galaxy.Name);
+            if (dialog.ShowDialog() == true)
+            {
+                foreach (var item in dialog.Result)
+                {
+                    if (!Objects.ContainsKey(item.ObjectID))
+                    {
+                        Objects.Add(item.ObjectID, item);
+                        lstObjects.Items.Add(item);
+                    }
                 }
             }
         }
 
-        private void ComboBoxItem_Selected(object sender, RoutedEventArgs e)
+        private void btnClearSelected_Click(object sender, RoutedEventArgs e)
         {
-            switch (cmbObjectFilter.SelectedIndex)
+            List<ArchestrAObject> objectsToRemove = new List<ArchestrAObject>();
+            foreach (ArchestrAObject item in lstObjects.SelectedItems)
             {
-                case 0:
-                    chkInstances.IsEnabled = true;
-                    chkTemplates.IsEnabled = true;
-                    break;
-                case 1:
-                    chkInstances.IsChecked = false;
-                    chkInstances.IsEnabled = false;
-                    chkTemplates.IsChecked = true;
-                    chkTemplates.IsEnabled = false;
-                    break;
-                case 2:
-                    chkInstances.IsChecked = true;
-                    chkInstances.IsEnabled = false;
-                    chkTemplates.IsChecked = false;
-                    chkTemplates.IsEnabled = false;
-                    break;
+                Objects.Remove(item.ObjectID);
+                objectsToRemove.Add(item);
             }
+            foreach (var item in objectsToRemove)
+            {
+                lstObjects.Items.Remove(item);
+            }
+        }
+
+        private void btnClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            Objects.Clear();
+            lstObjects.Items.Clear();
+        }
+
+        private void btnClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            txtLog.Clear();
         }
     }
 }

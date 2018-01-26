@@ -27,21 +27,7 @@ namespace AttributeWrangler
             InitializeComponent();
         }
 
-        private void txtGalaxyNode_LostFocus(object sender, RoutedEventArgs e)
-        {
-            LoadGalaxies();
-        }
-
-        private void txtGalaxyNode_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //LoadGalaxies();
-        }
-
-        private void LoadGalaxies()
-        {
-        }
-        
-        private void DoLogin()
+        private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -59,26 +45,21 @@ namespace AttributeWrangler
                     return;
                 }
                 _galaxies = grAccess.QueryGalaxies(nodeName);
-
                 if (_galaxies == null || grAccess.CommandResult.Successful == false)
                 {
                     MessageBox.Show("Unable to query galaxies on node " + nodeName);
                 }
                 else
                 {
-                    string username = txtUsername.Text;
-                    string password = txtPassword.Text;
-                   
                     IGalaxy galaxy = _galaxies[txtGalaxy.Text];
-                    galaxy.Login(username, password);
+                    galaxy.Login(txtUsername.Text, txtPassword.Text);
                     ICommandResult cmd = galaxy.CommandResult;
                     if (!cmd.Successful)
                     {
                         MessageBox.Show("Login to galaxy Failed :" + cmd.Text + " : " + cmd.CustomMessage);
                         return;
                     }
-                    //TODO: check sql permissions here too
-                    new MainWindow(galaxy).Show();
+                    new MainWindow(grAccess, galaxy).Show();
                     this.Close();
                 }
             }
@@ -86,13 +67,6 @@ namespace AttributeWrangler
             {
                 MessageBox.Show(ex.ToString());
             }
-
-            
-        }
-
-        private void btnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            DoLogin();
         }
     }
 }

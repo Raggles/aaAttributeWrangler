@@ -1,0 +1,35 @@
+﻿<Window x:Class="AttributeWrangler.AdvancedSearch"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AttributeWrangler"
+        mc:Ignorable="d"
+        Title="Advanced Object Search" Height="600" Width="500">
+    <Grid>
+        <Label Content="Object Name" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtObject" HorizontalAlignment="Left" Height="23" Margin="106,9,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262"/>
+        <Label Content="Area" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtArea" HorizontalAlignment="Left" Height="23" Margin="106,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262"/>
+        <TextBox x:Name="txtDerivedFrom" HorizontalAlignment="Left" Height="23" Margin="106,86,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262"/>
+        <CheckBox x:Name="chkParentTemplateOnly" Content="Immediate Parent Only" HorizontalAlignment="Left" Margin="106,114,0,0" VerticalAlignment="Top"/>
+        <Label Content="Derived From" HorizontalAlignment="Left" Margin="10,83,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="chkInstances" Content="Instances Only" HorizontalAlignment="Left" Margin="106,129,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnSearch" Content="Search" HorizontalAlignment="Left" Margin="106,154,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Button x:Name="btnAddSelected" Content="Add Selected" HorizontalAlignment="Left" Margin="186,154,0,0" VerticalAlignment="Top" Width="95" RenderTransformOrigin="1.584,0.717" Click="btnAddSelected_Click"/>
+        <ListBox x:Name="lstObjects" Margin="0,179,0,0" SelectionMode="Multiple">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Vertical"  Height="{Binding ActualHeight, ElementName=lstObjects}"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <CheckBox x:Name="chkParentAreaOnly" Content="Immediate Parent Only" HorizontalAlignment="Left" Margin="106,66,0,0" VerticalAlignment="Top"/>
+
+    </Grid>
+</Window>

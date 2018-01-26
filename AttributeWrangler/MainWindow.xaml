@@ -5,32 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AttributeWrangler"
         mc:Ignorable="d"
-        Title="MainWindow" Height="635.132" Width="739.316">
+        Title="ArchestrA Attribute Wrangler" Height="635.132" Width="1083.564" WindowState="Maximized">
     <Grid>
-        <Label x:Name="label" Content="Object Filter" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,38,0,0"/>
-        <TextBox x:Name="txtValuePattern" HorizontalAlignment="Left" Height="23" Margin="107,176,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149"/>
+        <Label x:Name="label" Content="Objects:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="356,10,0,0"/>
+        <TextBox x:Name="txtValuePattern" HorizontalAlignment="Left" Height="23" Margin="107,113,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244"/>
         <Label x:Name="label1" Content="Attribute Name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txtAttributePattern" HorizontalAlignment="Left" Height="23" Margin="107,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <ComboBox x:Name="cmbObjectFilter" HorizontalAlignment="Left" Margin="107,42,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0">
-            <ComboBoxItem Content="List" HorizontalAlignment="Left" Width="118"/>
-            <ComboBoxItem Content="Descendants" HorizontalAlignment="Left" Width="118"/>
-            <ComboBoxItem Content="Area" HorizontalAlignment="Left" Width="118" Selected="ComboBoxItem_Selected"/>
-        </ComboBox>
-        <CheckBox x:Name="chkInstances" Content="Instance" HorizontalAlignment="Left" Margin="112,69,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <CheckBox x:Name="chkTemplates" Content="Template" HorizontalAlignment="Left" Margin="112,84,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8"/>
-        <Label x:Name="label_Copy" Content="Action" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,105,0,0"/>
-        <RadioButton x:Name="radFind" Content="Find" HorizontalAlignment="Left" Margin="107,111,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton x:Name="radFindReplace" Content="Find-Replace" HorizontalAlignment="Left" Margin="107,126,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="radFindUpdate" Content="Find-Update" HorizontalAlignment="Left" Margin="107,141,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="radUpdate" Content="Update" HorizontalAlignment="Left" Margin="107,156,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="button" Content="..." HorizontalAlignment="Left" Margin="232,42,0,0" VerticalAlignment="Top" Width="24" Height="22"/>
-        <TextBox x:Name="txtReplaceValue" HorizontalAlignment="Left" Height="23" Margin="107,204,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149"/>
-        <Label x:Name="label_Copy1" Content="Find value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,172,0,0"/>
-        <Label x:Name="label_Copy2" Content="Replace value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,200,0,0"/>
-        <ListBox x:Name="lstObjects" Height="262" Margin="261,0,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="107,232,0,0" VerticalAlignment="Top" Width="75" Click="btnGo_Click"/>
-        <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="188,235,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8"/>
-        <TextBox x:Name="txtLog" Margin="0,262,0,0" TextWrapping="Wrap"/>
+        <TextBox x:Name="txtAttributePattern" HorizontalAlignment="Left" Height="59" Margin="107,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244"/>
+        <Label x:Name="label_Copy" Content="Action" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,72,0,0" RenderTransformOrigin="0.722,-1.972"/>
+        <RadioButton x:Name="radFind" Content="Find" HorizontalAlignment="Left" Margin="107,78,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <RadioButton x:Name="radFindReplace" Content="Find-Replace" HorizontalAlignment="Left" Margin="107,93,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radFindUpdate" Content="Find-Update" HorizontalAlignment="Left" Margin="247,78,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radUpdate" Content="Update" HorizontalAlignment="Left" Margin="247,93,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtReplaceValue" HorizontalAlignment="Left" Height="23" Margin="107,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244"/>
+        <Label x:Name="label_Copy1" Content="Find value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,109,0,0"/>
+        <Label x:Name="label_Copy2" Content="Replace value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,137,0,0"/>
+        <ListBox x:Name="lstObjects" Height="147" Margin="356,42,0,0" VerticalAlignment="Top" SelectionMode="Multiple">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Vertical"  Height="{Binding ActualHeight, ElementName=lstObjects}"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="107,169,0,0" VerticalAlignment="Top" Width="75" Click="btnGo_Click"/>
+        <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="188,172,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8"/>
+        <TextBox x:Name="txtLog" Margin="0,194,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
+        <Button x:Name="btnAddFromDerivationTree" Content="Add from derivation tree" HorizontalAlignment="Left" Margin="437,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAddFromDerivationTree_Click" />
+        <Button x:Name="btnAdvancedSearch" Content="Advanced Search" HorizontalAlignment="Left" Margin="604,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAdvancedSearch_Click" />
+        <Button x:Name="btnClearSelected" Content="Clear Selected" HorizontalAlignment="Left" Margin="771,13,0,0" VerticalAlignment="Top" Width="101" Click="btnClearSelected_Click" />
+        <Button x:Name="btnClearAll" Content="Clear All" HorizontalAlignment="Left" Margin="877,13,0,0" VerticalAlignment="Top" Width="95" Click="btnClearAll_Click" />
+        <Button x:Name="btnClearLog" Content="Clear Log" HorizontalAlignment="Left" Margin="977,13,0,0" VerticalAlignment="Top" Width="95" Click="btnClearLog_Click"  />
+        <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="404,10,0,0" Content="{Binding Items.Count, ElementName=lstObjects}"/>
+        <Button x:Name="btnAbort" Content="Abort!" HorizontalAlignment="Left" Margin="276,169,0,0" VerticalAlignment="Top" Width="75" />
 
     </Grid>
 </Window>

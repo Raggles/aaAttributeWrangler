@@ -5,10 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AttributeWrangler"
         mc:Ignorable="d"
-        Title="ObjectPicker" Height="300" Width="300" Loaded="Window_Loaded">
+        Title="Derivation Tree Picker" Height="600" Width="500" Loaded="Window_Loaded">
     <Grid>
-        <TreeView Height="240" VerticalAlignment="Top"/>
-        <Button Content="Done" HorizontalAlignment="Left" Margin="0,245,0,0" VerticalAlignment="Top" Width="292"/>
+        <TreeView x:Name="tvObjects" Margin="0,0,0,34">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding IsSelected}" />
+                        <TextBlock Text="{Binding Name}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <Button Content="Done" Margin="0,0,0,9" VerticalAlignment="Bottom" Click="btnDone_Click"/>
 
     </Grid>
 </Window>
