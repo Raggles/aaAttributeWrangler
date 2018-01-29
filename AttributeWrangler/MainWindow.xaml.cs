@@ -191,7 +191,8 @@ namespace AttributeWrangler
                             else
                             {
                                 string val = kvp.Value.value.GetString();
-                                Regex r = new Regex(_model.FindValue);
+                                string pattern = _model.FindValue.Replace("~%obj", obj.Name);
+                                Regex r = new Regex(pattern);
                                 if (r.IsMatch(val))
                                     _log.Info(string.Format("Found matching attribute [{0}] on object [{1}] with data type [{2}] and value [{3}]", kvp.Key, obj.Name, kvp.Value.DataType.ToString(), kvp.Value.value.GetString()));
                             }
@@ -317,12 +318,27 @@ namespace AttributeWrangler
         private void btnClearAll_Click(object sender, RoutedEventArgs e)
         {
             _model.Objects.Clear();
+            _model.ClearObjects();
             lstObjects.Items.Clear();
         }
 
         private void btnClearLog_Click(object sender, RoutedEventArgs e)
         {
             txtLog.Clear();
+        }
+
+        private void btnAbort_Click(object sender, RoutedEventArgs e)
+        {
+            _abortOperation = true;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (gridControls.IsEnabled == false)
+            {
+                MessageBox.Show("Please wait for any pending operations to complete.");
+                e.Cancel = true;
+            }
         }
     }
 }

@@ -15,7 +15,7 @@
         <CheckBox x:Name="chkParentTemplateOnly" Content="Immediate Parent Only" HorizontalAlignment="Left" Margin="106,114,0,0" VerticalAlignment="Top"/>
         <Label Content="Derived From" HorizontalAlignment="Left" Margin="10,83,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="chkInstances" Content="Instances Only" HorizontalAlignment="Left" Margin="106,129,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btnSearch" Content="Search" HorizontalAlignment="Left" Margin="106,154,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Button x:Name="btnSearch" Content="Search" HorizontalAlignment="Left" Margin="106,154,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" IsDefault="True"/>
         <Button x:Name="btnAddSelected" Content="Add Selected" HorizontalAlignment="Left" Margin="286,154,0,0" VerticalAlignment="Top" Width="95" RenderTransformOrigin="1.584,0.717" Click="btnAddSelected_Click"/>
         <ListBox x:Name="lstObjects" Margin="0,179,0,0" SelectionMode="Multiple">
             <ListBox.ItemsPanel>

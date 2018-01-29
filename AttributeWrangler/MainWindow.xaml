@@ -8,7 +8,7 @@
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:xamlSpinnersWPF="clr-namespace:xamlSpinnersWPF" x:Class="AttributeWrangler.MainWindow"
         mc:Ignorable="d"
-        Title="ArchestrA Attribute Wrangler" Height="635.132" Width="1083.564" WindowState="Maximized">
+        Title="ArchestrA Attribute Wrangler" Height="635.132" Width="1083.564" WindowState="Maximized" Closing="Window_Closing">
     <Window.DataContext>
         <local:WranglerViewModel x:Name="_model" />
     </Window.DataContext>
@@ -66,7 +66,7 @@
             <xamlSpinnersWPF:ucSpinnerDotCircle x:Name="spinner" HorizontalAlignment="Left" Height="19" Margin="247,168,0,0" VerticalAlignment="Top" Width="29" Visibility="Hidden"/>
         </Grid>
         
-        <Button x:Name="btnAbort" Content="Abort!" HorizontalAlignment="Left" Margin="276,169,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" />
+        <Button x:Name="btnAbort" Content="Abort!" HorizontalAlignment="Left" Margin="276,169,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="btnAbort_Click" />
         <TextBox x:Name="txtLog" Margin="0,194,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
 
     </Grid>

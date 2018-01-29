@@ -150,5 +150,10 @@ namespace AttributeWrangler
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        internal void ClearObjects()
+        {
+            _objects.Clear();
+        }
     }
 }
