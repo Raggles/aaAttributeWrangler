@@ -177,7 +177,6 @@ namespace AttributeWrangler
                 {
                     lstObjects.Items.Add(item);
                 }
-                lstObjects.SelectAll();
             }
             catch (Exception ex)
             {
@@ -190,6 +189,11 @@ namespace AttributeWrangler
             Result = (from ArchestrAObject i in lstObjects.SelectedItems select i).ToList();
             DialogResult = true;
             this.Close();
+        }
+
+        private void SelectAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            lstObjects.SelectAll();
         }
     }
 }

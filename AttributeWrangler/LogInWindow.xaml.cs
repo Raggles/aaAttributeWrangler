@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,42 +32,80 @@ namespace AttributeWrangler
         {
             try
             {
-                GRAccessApp grAccess;
-                string nodeName = txtGalaxyNode.Text;
+                spinner.Visibility = Visibility.Visible;
+                grid.IsEnabled = false;
 
-                try
+                string nodeName = txtGalaxyNode.Text;
+                string galaxyName = txtGalaxy.Text;
+                string user = txtUsername.Text;
+                string password = txtPassword.Text;
+
+                Thread t = new Thread(() =>
                 {
-                    grAccess = new GRAccessAppClass();
-                }
-                catch
-                {
-                    MessageBox.Show("Unable to initialize GRAccess.  Do you have it installed?");
-                    this.Close();
-                    return;
-                }
-                _galaxies = grAccess.QueryGalaxies(nodeName);
-                if (_galaxies == null || grAccess.CommandResult.Successful == false)
-                {
-                    MessageBox.Show("Unable to query galaxies on node " + nodeName);
-                }
-                else
-                {
-                    IGalaxy galaxy = _galaxies[txtGalaxy.Text];
-                    galaxy.Login(txtUsername.Text, txtPassword.Text);
-                    ICommandResult cmd = galaxy.CommandResult;
-                    if (!cmd.Successful)
+                    Login(nodeName, galaxyName, user, password);
+                    this.Dispatcher.Invoke(() =>
                     {
-                        MessageBox.Show("Login to galaxy Failed :" + cmd.Text + " : " + cmd.CustomMessage);
-                        return;
-                    }
-                    new MainWindow(grAccess, galaxy).Show();
-                    this.Close();
-                }
+                        grid.IsEnabled = true;
+                        spinner.Visibility = Visibility.Hidden;
+                    });
+
+                });
+                t.Start();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        private void Login(string nodeName, string galaxyName, string user, string password)
+        {
+            GRAccessApp grAccess;
+            try
+            {
+                grAccess = new GRAccessAppClass();
+            }
+            catch
+            {
+                DispatchMessagebox("Unable to initialize GRAccess.  Do you have it installed?");
+                return;
+            }
+
+            _galaxies = grAccess.QueryGalaxies(nodeName);
+            if (_galaxies == null || grAccess.CommandResult.Successful == false)
+            {
+                DispatchMessagebox("Unable to query galaxies on node " + nodeName);
+                return;
+            }
+            IGalaxy galaxy = _galaxies[galaxyName];
+            if (galaxy == null)
+            {
+                DispatchMessagebox(string.Format("Couldn't find galaxy {0} on node {1}", galaxyName, nodeName));
+                return;
+            }
+            galaxy.Login(user, password);
+            ICommandResult cmd = galaxy.CommandResult;
+            if (!cmd.Successful)
+            {
+                DispatchMessagebox("Login to galaxy Failed :" + cmd.Text + " : " + cmd.CustomMessage);
+            }
+            else
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    new MainWindow(grAccess, galaxy).Show();
+                    this.Close();
+                    return;
+                });
+            }
+        }
+
+        private void DispatchMessagebox(string message)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(message);
+            });
         }
     }
 }

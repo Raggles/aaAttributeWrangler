@@ -66,12 +66,15 @@
       <DependentUpon>AdvancedSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="DatabasteFunctions.cs" />
+    <Compile Include="EnumBoolConverter.cs" />
     <Compile Include="GalaxyFunctions.cs" />
     <Compile Include="ObjectPicker.xaml.cs">
       <DependentUpon>ObjectPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="TextBoxAppender.cs" />
     <Compile Include="Things.cs" />
+    <Compile Include="ucSpinnerDotCircle.xaml.cs" />
+    <Compile Include="WranglerViewModel.cs" />
     <Page Include="AdvancedSearch.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -98,6 +101,10 @@
     <Page Include="ObjectPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ucSpinnerDotCircle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

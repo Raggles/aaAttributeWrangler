@@ -17,6 +17,16 @@ namespace AttributeWrangler
         public int ParentObjectID { get; set; }
     }
 
+    public enum Operation
+    {
+        Find,
+        FindReplace,
+        FindUpdate,
+        Update,
+        SetLocked,
+        SetSecurity
+    }
+
     public enum PickerMode
     {
         List,

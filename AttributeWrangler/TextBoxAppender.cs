@@ -1,5 +1,6 @@
 ﻿using log4net.Appender;
 using System;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,37 +27,50 @@ namespace AttributeWrangler
 
         private Control FindControlRecursive(Window root, string textBoxName)
         {
-            foreach (Control item in ((Grid)root.Content).Children)
+            foreach (UIElement item in ((Grid)root.Content).Children)
             {
-                if (item.Name == textBoxName)
-                    return item;
+                Control c = item as Control;
+                if (c != null)
+                {
+                    if (c.Name == textBoxName)
+                        return c;
+                }
             }
             return null;
         }
 
         protected override void Append(log4net.Core.LoggingEvent loggingEvent)
         {
-            if (_textBox == null)
+            try
             {
-                if (String.IsNullOrEmpty(FormName) ||
-                    String.IsNullOrEmpty(TextBoxName))
-                    return;
-
-                Window w = Application.Current.Windows.OfType<Window>().Where(x => x.Title == FormName).FirstOrDefault();
-                if (w == null)
-                    return;
-
-                _textBox = (TextBox)FindControlRecursive(w, TextBoxName);
                 if (_textBox == null)
-                    return;
+                {
+                    if (String.IsNullOrEmpty(FormName) ||
+                        String.IsNullOrEmpty(TextBoxName))
+                    {
+                        return;
+                    }
 
-                w.Closing += (s, e) => _textBox = null;
+                    Window w = Application.Current.Windows.OfType<Window>().Where(x => x.Title == FormName).FirstOrDefault();
+                    if (w == null)
+                    {
+                        return;
+                    }
+                    _textBox = (TextBox)FindControlRecursive(w, TextBoxName);
+                    if (_textBox == null)
+                    {
+                        return;
+                    }
+                    w.Closing += (s, e) => _textBox = null;
+                }
+
+                _textBox.Dispatcher.BeginInvoke((Action)delegate
+                {
+                    _textBox.AppendText(RenderLoggingEvent(loggingEvent));
+                    _textBox.ScrollToEnd();
+                });
             }
-            
-            _textBox.Dispatcher.BeginInvoke((Action)delegate
-            {
-                _textBox.AppendText(RenderLoggingEvent(loggingEvent));
-            });
+            catch (Exception ex) {}
         }
     }
 
