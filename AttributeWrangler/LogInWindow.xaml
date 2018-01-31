@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:AttributeWrangler"
         xmlns:xamlSpinnersWPF="clr-namespace:xamlSpinnersWPF" x:Class="AttributeWrangler.LogInWindow"
         mc:Ignorable="d"
+        FocusManager.FocusedElement="{Binding ElementName=txtGalaxy}"
         Title="Log in to Galaxy" Height="189.733" Width="279.427" WindowStartupLocation="CenterScreen" WindowStyle="ToolWindow" ResizeMode="NoResize">
+    
     <Grid x:Name="grid">
         <Label Content="Galaxy Node" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="txtGalaxyNode" HorizontalAlignment="Left" Height="23" Margin="92,14,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="164" IsEnabled="False"/>

@@ -7,7 +7,6 @@ using System.Windows.Controls;
 
 namespace AttributeWrangler
 {
-
     public class TextBoxAppender : AppenderSkeleton
     {
         private TextBox _textBox;
@@ -70,7 +69,7 @@ namespace AttributeWrangler
                     _textBox.ScrollToEnd();
                 });
             }
-            catch (Exception ex) {}
+            catch {}
         }
     }
 

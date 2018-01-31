@@ -15,6 +15,10 @@ using System.Windows.Shapes;
 using ArchestrA.GRAccess;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.IO;
+using LumenWorks.Framework.IO.Csv;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace AttributeWrangler
 {
@@ -45,32 +49,39 @@ namespace AttributeWrangler
 
         private void GoButton_Click(object sender, RoutedEventArgs e)
         {
-            gridControls.IsEnabled = false;
-            _abortOperation = false;
-            btnAbort.IsEnabled = true;
-            btnGo.IsEnabled = false;
-            spinner.Visibility = Visibility.Visible;
-            
-            _t = new Thread(() =>
+            if (tabMain.SelectedIndex == 0)
             {
-                try
+                StartOperation();
+                _t = new Thread(() =>
                 {
-                    Go();
-
-                    this.Dispatcher.Invoke(() =>
+                    try
                     {
-                        gridControls.IsEnabled = true;
-                        btnAbort.IsEnabled = false;
-                        btnGo.IsEnabled = true;
-                        spinner.Visibility = Visibility.Hidden;
-                    });
-                }
-                catch (Exception ex)
+                        Go();
+                        _log.Info("All done");
+                        FinishOperation();                        
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex.ToString());
+                    }
+                });
+                _t.Start();
+            }
+            else if (tabMain.SelectedIndex ==1)
+            {
+                string[] files = (from string i in lstFiles.Items select i).ToArray();
+                if (files.Length != 0)
                 {
-                    _log.Error(ex.ToString());
+                    StartOperation();
+                    _t = new Thread(() =>
+                    {
+                        SetIOReferences(files);
+                        _log.Info("All done");
+                        FinishOperation();
+                    });
+                    _t.Start();
                 }
-            });
-            _t.Start();
+            }
         }
         
         private void Go()
@@ -126,7 +137,14 @@ namespace AttributeWrangler
                             continue;
                         }
                         instance.CheckOut();
-                        ProcessAttributes(obj, instance.ConfigurableAttributes);
+                        try
+                        {
+                            ProcessAttributes(obj, instance.ConfigurableAttributes);
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error(ex.ToString());
+                        }
                         instance.Save();
                         instance.CheckIn();
                         if (_abortOperation)
@@ -145,63 +163,62 @@ namespace AttributeWrangler
 
         private void ProcessAttributes(ArchestrAObject obj, IAttributes attributes)
         {
-            Dictionary<string, IAttribute> attributesDict = new Dictionary<string, IAttribute>();
-            Dictionary<string, IAttribute> filteredAttributesDict = new Dictionary<string, IAttribute>();
-            foreach (IAttribute attribute in attributes)
+            if (attributes == null)
             {
-                //there will be duplicates, but not for what we are interested in
-                if (!attributesDict.ContainsKey(attribute.Name))
-                    attributesDict.Add(attribute.Name, attribute);
+                _log.Error(string.Format("Configurable attributes on {0} was null.  Possibly being updated by checkin from other object", obj.Name));
+                return;
             }
-            //filter attributes here
-            Regex regex = new Regex(_model.AttributePattern);
-
-            foreach (var kvp in attributesDict)
+            foreach (var searchParams in _model.SearchParameters)
             {
-                if (regex.IsMatch(kvp.Key))
+                Dictionary<string, IAttribute> attributesDict = new Dictionary<string, IAttribute>();
+                Dictionary<string, IAttribute> filteredAttributesDict = new Dictionary<string, IAttribute>();
+                foreach (IAttribute attribute in attributes)
                 {
-                    filteredAttributesDict.Add(kvp.Key, kvp.Value);
+                    //there will be duplicates, but not for what we are interested in
+                    if (!attributesDict.ContainsKey(attribute.Name))
+                        attributesDict.Add(attribute.Name, attribute);
                 }
-            }
-            try
-            {
-                ApplyActions(obj, filteredAttributesDict);
-                
-            }
-            catch (Exception ex)
-            {
-                _log.Error(ex.ToString());
+
+                Regex regex = new Regex(searchParams.AttributePattern);
+
+                foreach (var kvp in attributesDict)
+                {
+                    if (regex.IsMatch(kvp.Key))
+                    {
+                        filteredAttributesDict.Add(kvp.Key, kvp.Value);
+                    }
+                }
+                ApplyActions(obj, filteredAttributesDict, searchParams);
             }
         }
-
         
-        private void ApplyActions(ArchestrAObject obj, Dictionary<string, IAttribute> attributes)
+        private void ApplyActions(ArchestrAObject obj, Dictionary<string, IAttribute> attributes, SearchParametersViewModel searchParams)
         {
             foreach (var kvp in attributes)
             {
                 try
                 {
-                    switch (_model.Operation)
+                    switch (searchParams.Operation)
                     {
                         case Operation.Find:
-                            if (string.IsNullOrWhiteSpace(_model.FindValue))
+                            if (string.IsNullOrWhiteSpace(searchParams.FindValue))
                             {
                                 _log.Info(string.Format("Found matching attribute [{0}] on object [{1}] with data type [{2}] and value [{3}]", kvp.Key, obj.Name, kvp.Value.DataType.ToString(), kvp.Value.value.GetString()));
                             }
                             else
                             {
                                 string val = kvp.Value.value.GetString();
-                                string pattern = _model.FindValue.Replace("~%obj", obj.Name);
+                                string pattern = searchParams.FindValue.Replace("~%obj", obj.Name);
                                 Regex r = new Regex(pattern);
                                 if (r.IsMatch(val))
                                     _log.Info(string.Format("Found matching attribute [{0}] on object [{1}] with data type [{2}] and value [{3}]", kvp.Key, obj.Name, kvp.Value.DataType.ToString(), kvp.Value.value.GetString()));
                             }
                             break;
                         case Operation.SetLocked:
-                            _log.Error(string.Format("Setting Lock status on attribute [{0}] on object [{1}] to [{2}]", kvp.Key, obj.Name, _model.Locked.ToString()));
+                            _log.Error(string.Format("Setting Lock status on attribute [{0}] on object [{1}] to [{2}]", kvp.Key, obj.Name, searchParams.Locked.ToString()));
                             if (!_model.WhatIf)
                             {
-                                kvp.Value.SetLocked(_model.Locked);
+                                kvp.Value.SetLocked(searchParams.Locked);
                                 ICommandResult cmd = kvp.Value.CommandResult;
                                 if (!cmd.Successful)
                                 {
@@ -211,10 +228,10 @@ namespace AttributeWrangler
                             }
                             break;
                         case Operation.SetSecurity:
-                            _log.Error(string.Format("Setting security classification on attribute [{0}] on object [{1}] to [{2}]", kvp.Key, obj.Name, _model.Security.ToString()));
+                            _log.Error(string.Format("Setting security classification on attribute [{0}] on object [{1}] to [{2}]", kvp.Key, obj.Name, searchParams.Security.ToString()));
                             if (!_model.WhatIf)
                             {
-                                kvp.Value.SetSecurityClassification(_model.Security);
+                                kvp.Value.SetSecurityClassification(searchParams.Security);
                                 ICommandResult cmd = kvp.Value.CommandResult;
                                 if (!cmd.Successful)
                                 {
@@ -227,42 +244,66 @@ namespace AttributeWrangler
                             switch (kvp.Value.DataType)
                             {
                                 case MxDataType.MxReferenceType:
-                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, obj, kvp.Value, _model.Operation, _model.ReplaceValue, _model.FindValue);
+                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, searchParams.ReplaceValue, searchParams.FindValue);
                                     break;
                                 case MxDataType.MxString:
-                                    GalaxyFunctions.UpdateMxString(_model.WhatIf, obj, kvp.Value, _model.Operation, _model.ReplaceValue, _model.FindValue);
+                                    GalaxyFunctions.UpdateMxString(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, searchParams.ReplaceValue, searchParams.FindValue);
                                     break;
                                 case MxDataType.MxInteger:
                                     int intFind, intReplace;
-                                    if (!int.TryParse(_model.FindValue, out intFind))
+                                    if (!int.TryParse(searchParams.FindValue, out intFind) && searchParams.Operation != Operation.Update)
+                                    {
                                         _log.Error("Find value is not a valid integer");
-                                    if (!int.TryParse(_model.ReplaceValue, out intReplace))
+                                        return;
+                                    }
+                                    if (!int.TryParse(searchParams.ReplaceValue, out intReplace))
+                                    {
                                         _log.Error("Replace value is not a valid integer");
-                                    GalaxyFunctions.UpdateMxInteger(_model.WhatIf, obj, kvp.Value, _model.Operation, intReplace, intFind);
+                                        return;
+                                    }
+                                    GalaxyFunctions.UpdateMxInteger(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, intReplace, intFind);
                                     break;
                                 case MxDataType.MxFloat:
                                     float fltFind, fltReplace;
-                                    if (!float.TryParse(_model.FindValue, out fltFind))
+                                    if (!float.TryParse(searchParams.FindValue, out fltFind) && searchParams.Operation != Operation.Update)
+                                    {
                                         _log.Error("Find value is not a valid float");
-                                    if (!float.TryParse(_model.ReplaceValue, out fltReplace))
+                                        return;
+                                    }
+                                    if (!float.TryParse(searchParams.ReplaceValue, out fltReplace))
+                                    {
                                         _log.Error("Replace value is not a valid float");
-                                    GalaxyFunctions.UpdateMxFloat(_model.WhatIf, obj, kvp.Value, _model.Operation, fltReplace, fltFind);
+                                        return;
+                                    }
+                                    GalaxyFunctions.UpdateMxFloat(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, fltReplace, fltFind);
                                     break;
                                 case MxDataType.MxDouble:
                                     double dblFind, dblReplace;
-                                    if (!double.TryParse(_model.FindValue, out dblFind))
+                                    if (!double.TryParse(searchParams.FindValue, out dblFind) && searchParams.Operation != Operation.Update)
+                                    {
                                         _log.Error("Find value is not a valid double");
-                                    if (!double.TryParse(_model.ReplaceValue, out dblReplace))
+                                        return;
+                                    }
+                                    if (!double.TryParse(searchParams.ReplaceValue, out dblReplace))
+                                    {
                                         _log.Error("Replace value is not a valid double");
-                                    GalaxyFunctions.UpdateMxDouble(_model.WhatIf, obj, kvp.Value, _model.Operation, dblReplace, dblFind);
+                                        return;
+                                    }
+                                    GalaxyFunctions.UpdateMxDouble(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, dblReplace, dblFind);
                                     break;
                                 case MxDataType.MxBoolean:
                                     bool bFind, bReplace;
-                                    if (!bool.TryParse(_model.FindValue, out bFind))
+                                    if (!bool.TryParse(searchParams.FindValue, out bFind) && searchParams.Operation != Operation.Update)
+                                    {
                                         _log.Error("Find value is not a valid boolean");
-                                    if (!bool.TryParse(_model.ReplaceValue, out bReplace))
+                                        return;
+                                    }
+                                    if (!bool.TryParse(searchParams.ReplaceValue, out bReplace))
+                                    {
                                         _log.Error("Replace value is not a valid float");
-                                    GalaxyFunctions.UpdateMxBool(_model.WhatIf, obj, kvp.Value, _model.Operation, bReplace, bFind);
+                                        return;
+                                    }
+                                    GalaxyFunctions.UpdateMxBool(_model.WhatIf, obj.Name, kvp.Value, searchParams.Operation, bReplace, bFind);
                                     break;
                                 default:
                                     _log.Warn(string.Format("Attribute [{0}] on object [{1}] has a data type [{2}] which is not supported", kvp.Key, obj.Name, kvp.Value.DataType.ToString()));
@@ -334,11 +375,145 @@ namespace AttributeWrangler
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (gridControls.IsEnabled == false)
+            if (tabMain.IsEnabled == false)
             {
                 MessageBox.Show("Please wait for any pending operations to complete.");
                 e.Cancel = true;
             }
+        }
+
+        public void SetIOReferences(string[] files)
+        {
+            List<ArchestrACsvItem> Items = new List<ArchestrACsvItem>();
+            foreach (var file in files)
+            {
+                try
+                {
+                    if (_abortOperation)
+                    {
+                        _log.Warn("Operation was aborted");
+                        return;
+                    }
+                    using (CachedCsvReader csv = new CachedCsvReader(new StreamReader(file), true))
+                    {
+                        while (csv.ReadNextRecord())
+                        {
+                            ArchestrACsvItem i = new ArchestrACsvItem();
+                            i.Object = csv["Object"];
+                            i.Attribute = csv["Attribute"];
+                            i.Type = csv["Type"];
+                            i.Address = csv["Address"];
+                            if (i.Type == "DI" || i.Type == "AI" || i.Type == "CO")
+                                i.IsInput = true;
+                            else if (i.Type == "DO" || i.Type == "AO")
+                                i.IsInput = false;
+                            else
+                                continue;
+                            if (i.IsInput)
+                                i.Attribute += ".InputSource";
+                            else
+                                i.Attribute += ".OutputDest";
+                            Items.Add(i);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex.ToString());
+                }
+            }
+            var query = from i in Items group i by i.Object;
+
+            foreach (var group in query)
+            {
+                try
+                {
+                    if (_abortOperation)
+                    {
+                        _log.Warn("Operation was aborted");
+                        return;
+                    }
+                    _log.Info(string.Format("Checking out {0}...", group.Key));
+                    IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsInstance, new string[] { group.Key });
+
+                    ICommandResult cmd = _galaxy.CommandResult;
+                    if (!cmd.Successful)
+                    {
+                        _log.Info(string.Format("Failed to check out {0}:{1}:{2}", group.Key, cmd.Text, cmd.CustomMessage));
+                    }
+
+                    IInstance instance = (IInstance)queryResult[1];//can throw errors here
+                    if (instance.CheckoutStatus != ECheckoutStatus.notCheckedOut)
+                    {
+                        _log.Info(string.Format("Object [{0}] is already checked out by [{1}]", group.Key, instance.checkedOutBy));
+                        return;
+                    }
+
+                    instance.CheckOut();
+                    foreach (var a2item in group)
+                    {
+                        try
+                        {
+                            IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
+                            GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error(ex.ToString());
+                        }
+                    }
+                    _log.Info("Saving " + group.Key + "...");
+                    instance.Save();
+                    _log.Info("Checking in " + group.Key + "...");
+                    instance.CheckIn();
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex.ToString());
+                }
+            }
+        }
+
+        private void SelectCsvFilesButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog d = new OpenFileDialog
+            {
+                Filter = "csv files|*.csv"
+            };
+            if (d.ShowDialog() == true)
+            {
+                foreach (var file in d.FileNames)
+                {
+                    lstFiles.Items.Add(file);
+                }
+            }
+        }
+
+        private void ClearFilesButton_Click(object sender, RoutedEventArgs e)
+        {
+            lstFiles.Items.Clear();
+        }
+
+        private void StartOperation()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _abortOperation = false;
+                spinner.Visibility = Visibility.Visible;
+                btnAbort.IsEnabled = true;
+                tabMain.IsEnabled = false;
+            });
+        }
+
+        private void FinishOperation()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _abortOperation = false;
+                spinner.Visibility = Visibility.Hidden;
+                btnAbort.IsEnabled = false;
+                tabMain.IsEnabled = true;
+            });
         }
     }
 }

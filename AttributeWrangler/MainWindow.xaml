@@ -8,7 +8,7 @@
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:xamlSpinnersWPF="clr-namespace:xamlSpinnersWPF" x:Class="AttributeWrangler.MainWindow"
         mc:Ignorable="d"
-        Title="ArchestrA Attribute Wrangler" Height="635.132" Width="1083.564" WindowState="Maximized" Closing="Window_Closing">
+        Title="ArchestrA Attribute Wrangler" Height="524.132" Width="1024.564" WindowState="Maximized" Closing="Window_Closing">
     <Window.DataContext>
         <local:WranglerViewModel x:Name="_model" />
     </Window.DataContext>
@@ -26,48 +26,78 @@
         <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Window.Resources>
     <Grid>
-        <Grid Height="194" VerticalAlignment="Top" x:Name="gridControls" >
-            <Label Content="Objects:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="356,10,0,0"/>
-            <TextBox x:Name="txtValuePattern" HorizontalAlignment="Left" Height="23" Margin="107,113,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="136" Panel.ZIndex="5" Text="{Binding FindValue}"/>
-            <Label Content="Attribute Name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-            <TextBox x:Name="txtAttributePattern" HorizontalAlignment="Left" Height="42" Margin="107,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Text="{Binding AttributePattern}"/>
-            <Label Content="Action" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,72,0,0" RenderTransformOrigin="0.722,-1.972"/>
-            <RadioButton x:Name="optFind" Content="Find" HorizontalAlignment="Left" Margin="107,61,0,0" VerticalAlignment="Top" Panel.ZIndex="1" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.Find}}" />
-            <RadioButton x:Name="optFindReplace" Content="Find-Replace" HorizontalAlignment="Left" Margin="107,76,0,0" VerticalAlignment="Top" Panel.ZIndex="2" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.FindReplace}}" />
-            <RadioButton x:Name="optFindUpdate" Content="Find-Update" HorizontalAlignment="Left" Margin="107,93,0,0" VerticalAlignment="Top" Panel.ZIndex="3" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.FindUpdate}}"/>
-            <RadioButton x:Name="optUpdate" Content="Update" HorizontalAlignment="Left" Margin="247,61,0,0" VerticalAlignment="Top" Panel.ZIndex="4"/>
-            <RadioButton x:Name="optLock" Content="Set Lock" HorizontalAlignment="Left" Margin="247,76,0,0" VerticalAlignment="Top" Panel.ZIndex="4" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.SetLocked}}"/>
-            <RadioButton x:Name="optSecurity" Content="Set Security" HorizontalAlignment="Left" Margin="247,93,0,0" VerticalAlignment="Top" Panel.ZIndex="4" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.SetSecurity}}" />
-            <ComboBox x:Name="cmbLocked"  HorizontalAlignment="Left" Margin="248,113,0,0" VerticalAlignment="Top" Width="103" ItemsSource="{Binding Source={StaticResource dataFromLockedEnum}}" SelectedItem="{Binding Path=Locked}" />
-            <ComboBox x:Name="cmbSecurity"  HorizontalAlignment="Left" Margin="247,142,0,0" VerticalAlignment="Top" Width="103" ItemsSource="{Binding Source={StaticResource dataFromSecurityEnum}}" SelectedItem="{Binding Path=Security}" />
-            <TextBox x:Name="txtReplaceValue" HorizontalAlignment="Left" Height="23" Margin="107,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="136" Panel.ZIndex="6" Text="{Binding ReplaceValue}"/>
-            <Label Content="Find value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,109,0,0"/>
-            <Label Content="Replace value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,137,0,0"/>
-            <ListBox x:Name="lstObjects" Height="147" Margin="356,42,0,0" VerticalAlignment="Top" SelectionMode="Multiple">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel IsItemsHost="True" Orientation="Vertical"  Height="{Binding ActualHeight, ElementName=lstObjects}"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="107,169,0,0" VerticalAlignment="Top" Width="75" Click="GoButton_Click" Panel.ZIndex="8"/>
-            <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="188,172,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8" Panel.ZIndex="7" IsChecked="{Binding WhatIf}" />
-            <Button x:Name="btnAddFromDerivationTree" Content="Add from derivation tree" HorizontalAlignment="Left" Margin="437,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAddFromDerivationTree_Click" />
-            <Button x:Name="btnAdvancedSearch" Content="Advanced Search" HorizontalAlignment="Left" Margin="604,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAdvancedSearch_Click" />
-            <Button x:Name="btnClearSelected" Content="Clear Selected" HorizontalAlignment="Left" Margin="771,13,0,0" VerticalAlignment="Top" Width="101" Click="btnClearSelected_Click" />
-            <Button x:Name="btnClearAll" Content="Clear All" HorizontalAlignment="Left" Margin="877,13,0,0" VerticalAlignment="Top" Width="95" Click="btnClearAll_Click" />
-            <Button x:Name="btnClearLog" Content="Clear Log" HorizontalAlignment="Left" Margin="977,13,0,0" VerticalAlignment="Top" Width="95" Click="btnClearLog_Click"  />
-            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="404,10,0,0" Content="{Binding Items.Count, ElementName=lstObjects}"/>
-            <xamlSpinnersWPF:ucSpinnerDotCircle x:Name="spinner" HorizontalAlignment="Left" Height="19" Margin="247,168,0,0" VerticalAlignment="Top" Width="29" Visibility="Hidden"/>
-        </Grid>
-        
-        <Button x:Name="btnAbort" Content="Abort!" HorizontalAlignment="Left" Margin="276,169,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="btnAbort_Click" />
-        <TextBox x:Name="txtLog" Margin="0,194,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
+        <TabControl x:Name="tabMain" Height="253" VerticalAlignment="Top">
+            <TabItem Header="Manual Update" >
+                <Grid>
+                    <TabControl x:Name="tabSearchParams" ItemsSource="{Binding SearchParameters}" HorizontalAlignment="Left" Width="361" AlternationCount="100" SelectedItem="{Binding SelectedItem}" >
+                    <TabControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource  FindAncestor, AncestorType=TabItem}}" />
+                            </DataTemplate>
+                        </TabControl.ItemTemplate>
+                        <TabControl.ContentTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Label Content="Attribute Name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" Height="42" Margin="107,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Text="{Binding AttributePattern, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Label Content="Action" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,72,0,0" RenderTransformOrigin="0.722,-1.972"/>
+                                    <RadioButton Content="Find" HorizontalAlignment="Left" Margin="107,61,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.Find}}" />
+                                    <RadioButton Content="Find-Replace" HorizontalAlignment="Left" Margin="107,76,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.FindReplace}}" />
+                                    <RadioButton Content="Find-Update" HorizontalAlignment="Left" Margin="107,93,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.FindUpdate}}"/>
+                                    <RadioButton Content="Update" HorizontalAlignment="Left" Margin="247,61,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.Update}}" />
+                                    <RadioButton Content="Set Lock" HorizontalAlignment="Left" Margin="247,76,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.SetLocked}}"/>
+                                    <RadioButton Content="Set Security" HorizontalAlignment="Left" Margin="247,93,0,0" VerticalAlignment="Top" IsChecked="{Binding Path=Operation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Operation.SetSecurity}}" />
+                                    <ComboBox HorizontalAlignment="Left" Margin="248,113,0,0" VerticalAlignment="Top" Width="103" ItemsSource="{Binding Source={StaticResource dataFromLockedEnum}}" SelectedItem="{Binding Path=Locked}" />
+                                    <ComboBox HorizontalAlignment="Left" Margin="247,142,0,0" VerticalAlignment="Top" Width="103" ItemsSource="{Binding Source={StaticResource dataFromSecurityEnum}}" SelectedItem="{Binding Path=Security}" />
+                                    <Label Content="Find value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,109,0,0"/>
+                                    <TextBox HorizontalAlignment="Left" Height="23" Margin="107,113,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="136" Text="{Binding FindValue, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <Label Content="Replace value" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,137,0,0"/>
+                                    <TextBox HorizontalAlignment="Left" Height="23" Margin="107,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="136" Text="{Binding ReplaceValue, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <Button Content="Load" Margin="247,169,0,0" HorizontalAlignment="Left" Width="48" Height="20" VerticalAlignment="Top" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=TabControl}, Path=DataContext.LoadSearchParameters}" CommandParameter="{Binding}" />
+                                    <Button Content="Save" Margin="303,169,0,0" HorizontalAlignment="Left" Width="48" Height="20" VerticalAlignment="Top" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=TabControl}, Path=DataContext.SaveSearchParameters}" CommandParameter="{Binding}"/>
+                                    <Button Content="Add" HorizontalAlignment="Left" Margin="177,169,0,0" VerticalAlignment="Top" Width="66" Height="20" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=TabControl}, Path=DataContext.AddSearchParameters}" CommandParameter="{Binding}" />
+                                    <Button Content="Delete" HorizontalAlignment="Left" Margin="107,169,0,0" VerticalAlignment="Top" Width="65" Height="20" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=TabControl}, Path=DataContext.DeleteSearchParameters}" CommandParameter="{Binding}" />
+
+                                </Grid>
+                            </DataTemplate>
+                        </TabControl.ContentTemplate>
+                    </TabControl>
+                    <Label Content="Objects:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="366,10,0,0" RenderTransformOrigin="0.648,0.564"/>
+                    <ListBox x:Name="lstObjects" Height="183" Margin="366,42,0,0" VerticalAlignment="Top" SelectionMode="Multiple">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel IsItemsHost="True" Orientation="Vertical"  Height="{Binding ActualHeight, ElementName=lstObjects}"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button x:Name="btnAddFromDerivationTree" Content="Add from derivation tree" HorizontalAlignment="Left" Margin="437,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAddFromDerivationTree_Click" />
+                    <Button x:Name="btnAdvancedSearch" Content="Advanced Search" HorizontalAlignment="Left" Margin="604,13,0,0" VerticalAlignment="Top" Width="162" Click="btnAdvancedSearch_Click" />
+                    <Button x:Name="btnClearSelected" Content="Clear Selected" HorizontalAlignment="Left" Margin="771,13,0,0" VerticalAlignment="Top" Width="101" Click="btnClearSelected_Click" />
+                    <Button x:Name="btnClearAll" Content="Clear All" HorizontalAlignment="Left" Margin="877,13,0,0" VerticalAlignment="Top" Width="95" Click="btnClearAll_Click" />
+                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="416,10,0,0" Content="{Binding Items.Count, ElementName=lstObjects}"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="CSV Update">
+                <Grid >
+                    <ListBox x:Name="lstFiles" Margin="0,35,0,0"/>
+                    <Button Content="Select files..." HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="SelectCsvFilesButton_Click"/>
+                    <Button Content="Clear" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="ClearFilesButton_Click" RenderTransformOrigin="1.613,0.5"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <xamlSpinnersWPF:ucSpinnerDotCircle x:Name="spinner" HorizontalAlignment="Left" Height="19" Margin="140,258,0,0" VerticalAlignment="Top" Width="29" Visibility="Hidden" />
+        <Button x:Name="btnAbort" Content="Abort!" HorizontalAlignment="Left" Margin="174,258,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="btnAbort_Click" />
+        <TextBox x:Name="txtLog" Margin="0,283,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
+        <Button x:Name="btnClearLog" Content="Clear Log" HorizontalAlignment="Left" Margin="254,258,0,0" VerticalAlignment="Top" Width="95" Click="btnClearLog_Click"  />
+        <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="0,258,0,0" VerticalAlignment="Top" Width="75" Click="GoButton_Click" Panel.ZIndex="8"/>
+        <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="80,261,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8" Panel.ZIndex="7" IsChecked="{Binding WhatIf}" />
 
     </Grid>
 </Window>

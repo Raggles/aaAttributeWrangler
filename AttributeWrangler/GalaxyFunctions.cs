@@ -6,15 +6,15 @@ namespace AttributeWrangler
     {
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static void UpdateMxReference(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, string newValue, string findString = "")
+        public static void UpdateMxReference(bool whatif, string objName, IAttribute attribute, Operation op, string newValue, string findString = "")
         {
             if (attribute.DataType != MxDataType.MxReferenceType)
             {
                 _log.Error(string.Format("Attribute data type {0} is not supported by function {1}", attribute.DataType.ToString(), nameof(UpdateMxReference)));
             }
             IMxReference mxref = attribute.value.GetMxReference();
-            findString = findString.Replace("~%obj", obj.Name);
-            newValue = newValue.Replace("~%obj", obj.Name);
+            findString = findString.Replace("~%obj", objName);
+            newValue = newValue.Replace("~%obj", objName);
 
             switch (op)
             {
@@ -38,7 +38,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), mxref.FullReferenceString));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), mxref.FullReferenceString));
 
             if (!whatif)
             {
@@ -54,15 +54,15 @@ namespace AttributeWrangler
             }
         }
 
-        public static void UpdateMxString(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, string newValue, string findString = "")
+        public static void UpdateMxString(bool whatif, string objName, IAttribute attribute, Operation op, string newValue, string findString = "")
         {
             if (attribute.DataType != MxDataType.MxString)
             {
                 _log.Error(string.Format("Attribute data type {0} is not supported by function {1}", attribute.DataType.ToString(), nameof(UpdateMxString)));
             }
             string newString = attribute.value.GetString();
-            findString = findString.Replace("~%obj", obj.Name);
-            newValue = newValue.Replace("~%obj", obj.Name);
+            findString = findString.Replace("~%obj", objName);
+            newValue = newValue.Replace("~%obj", objName);
 
             switch (op)
             {
@@ -86,7 +86,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), newString));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newString));
 
             if (!whatif)
             {
@@ -101,7 +101,7 @@ namespace AttributeWrangler
             }
         }
 
-        public static void UpdateMxInteger(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, int newValue, int findInt = 0)
+        public static void UpdateMxInteger(bool whatif, string objName, IAttribute attribute, Operation op, int newValue, int findInt = 0)
         {
             if (attribute.DataType != MxDataType.MxInteger)
             {
@@ -125,7 +125,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), newInt));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newInt));
 
             if (!whatif)
             {
@@ -141,7 +141,7 @@ namespace AttributeWrangler
             }
         }
 
-        public static void UpdateMxDouble(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, double newValue, double findDbl = 0)
+        public static void UpdateMxDouble(bool whatif, string objName, IAttribute attribute, Operation op, double newValue, double findDbl = 0)
         {
             if (attribute.DataType != MxDataType.MxDouble)
             {
@@ -165,7 +165,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), newDouble));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newDouble));
 
             if (!whatif)
             {
@@ -181,7 +181,7 @@ namespace AttributeWrangler
             }
         }
 
-        public static void UpdateMxFloat(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, float newValue, float findFlt = 0)
+        public static void UpdateMxFloat(bool whatif, string objName, IAttribute attribute, Operation op, float newValue, float findFlt = 0)
         {
             if (attribute.DataType != MxDataType.MxFloat)
             {
@@ -205,7 +205,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), newFloat));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newFloat));
 
             if (!whatif)
             {
@@ -221,7 +221,7 @@ namespace AttributeWrangler
             }
         }
 
-        public static void UpdateMxBool(bool whatif, ArchestrAObject obj, IAttribute attribute, Operation op, bool newValue, bool findBool = false)
+        public static void UpdateMxBool(bool whatif, string objName, IAttribute attribute, Operation op, bool newValue, bool findBool = false)
         {
             if (attribute.DataType != MxDataType.MxBoolean)
             {
@@ -245,7 +245,7 @@ namespace AttributeWrangler
                     return;
             }
 
-            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, obj.Name, attribute.value.GetString(), newBool));
+            _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newBool));
 
             if (!whatif)
             {
