@@ -6,7 +6,11 @@ A tool for bulk editing ArchestrA attributes.  Some example use cases:
 * Change all the alarm priorities on objects hosted in a particular area
 * Changing the IO references for all objects using a particular topic name
 
+![](/docs/aaw2.png)
+
 To use it, first select the objects you want to include in the search.  You can either pick objects out of the derivation tree or search for them using the advanced search function (recommended).  You can search by area, template, and object name.  All object search options are regex pattern matched, so if you want to match a template remember to escape the $ character (i.e. \$).
+
+![](/docs/aaw1.png)
 
 Then, set the attribute name pattern (also regex aware).  Then select the action you want to perform, the options are:
 * Find:  List the matched attributes in the log.  You can also match values against a regex pattern if you fill out the find value.
