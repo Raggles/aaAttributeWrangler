@@ -98,6 +98,7 @@
         <Button x:Name="btnClearLog" Content="Clear Log" HorizontalAlignment="Left" Margin="254,258,0,0" VerticalAlignment="Top" Width="95" Click="btnClearLog_Click"  />
         <Button x:Name="btnGo" Content="Go!" HorizontalAlignment="Left" Margin="0,258,0,0" VerticalAlignment="Top" Width="75" Click="GoButton_Click" Panel.ZIndex="8"/>
         <CheckBox x:Name="chkWhatif" Content="Whatif" HorizontalAlignment="Left" Margin="80,261,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.662,-0.8" Panel.ZIndex="7" IsChecked="{Binding WhatIf}" />
+        <Label x:Name="lblAbort"  Content="Aborting..." HorizontalAlignment="Left" Margin="354,255,0,0" VerticalAlignment="Top" Visibility="Hidden" />
 
     </Grid>
 </Window>

@@ -31,6 +31,10 @@ Additional info:
 * If your galaxy uses OS security, you don't need to fill out the username and password fields when logging in.
 * The tool accesses the galaxy database using integrated security, so ensure that the current user has access to the database.
 * This tool will not stop you from doing stupid things.  I strongly suggest you backup your galaxy before using this tool.  Use the whatif option to test your operations.
+* Try running as an administrator if you get weird errors about license limit issues.
+* Edit the log4net.config file if you want to see debug information in the log - change INFO to DEBUG on line 3.
+* Current testing has been done on Version 2017 Update 1.
+
 
 ### Bulk updating IO references via csv file
 The Wrangler can bulk  update IO references via csv file.  This is primarily designed to be used in conjunction with the aaIOChecker tool, which can automatically produce these files, but any valid csv file can be used.  The csv file should contain at least the following columns,

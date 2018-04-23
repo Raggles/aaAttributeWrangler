@@ -112,7 +112,12 @@ namespace AttributeWrangler
                         _log.Debug(string.Format("Checked out {0}", obj.Name));
 
                         ProcessAttributes(obj, template.ConfigurableAttributes);
-                        template.Save();
+                        if (!_model.WhatIf)
+                        {
+                            _log.Debug(string.Format("Saving {0}", obj.Name));
+                            template.Save();
+                        }
+                        _log.Debug(string.Format("Checking in {0}", obj.Name));
                         template.CheckIn();
                         if (_abortOperation)
                         {
@@ -136,7 +141,9 @@ namespace AttributeWrangler
                             _log.Warn(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, instance.checkedOutBy));
                             continue;
                         }
+                        _log.Debug(string.Format("Checking out {0}", obj.Name));
                         instance.CheckOut();
+                        _log.Debug(string.Format("Checked out {0}", obj.Name));
                         try
                         {
                             ProcessAttributes(obj, instance.ConfigurableAttributes);
@@ -145,7 +152,12 @@ namespace AttributeWrangler
                         {
                             _log.Error(ex.ToString());
                         }
-                        instance.Save();
+                        if (!_model.WhatIf)
+                        {
+                            _log.Debug(string.Format("Saving {0}", obj.Name));
+                            instance.Save();
+                        }
+                        _log.Debug(string.Format("Checking in {0}", obj.Name));
                         instance.CheckIn();
                         if (_abortOperation)
                         {
@@ -371,6 +383,7 @@ namespace AttributeWrangler
         private void btnAbort_Click(object sender, RoutedEventArgs e)
         {
             _abortOperation = true;
+            lblAbort.Visibility = Visibility.Visible;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -513,6 +526,7 @@ namespace AttributeWrangler
                 spinner.Visibility = Visibility.Hidden;
                 btnAbort.IsEnabled = false;
                 tabMain.IsEnabled = true;
+                lblAbort.Visibility = Visibility.Hidden;
             });
         }
     }
