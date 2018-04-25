@@ -41,3 +41,4 @@ The Wrangler can bulk  update IO references via csv file.  This is primarily des
 * Address - the new IO reference
 * Attribute - the name of the attribute (not including the object name)
 * Object - the object that the attribute belongs to
+* Type - for input sources this should be one of DI,AI,CO,Input.  For output destinations this should be one of AO,DO,Output.  The AttributeWrangler does not care which of the input or output options you use, the different notations are for compatibility with other tools.
