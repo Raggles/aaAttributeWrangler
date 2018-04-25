@@ -416,9 +416,9 @@ namespace AttributeWrangler
                             i.Attribute = csv["Attribute"];
                             i.Type = csv["Type"];
                             i.Address = csv["Address"];
-                            if (i.Type == "DI" || i.Type == "AI" || i.Type == "CO")
+                            if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT")
                                 i.IsInput = true;
-                            else if (i.Type == "DO" || i.Type == "AO")
+                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT")
                                 i.IsInput = false;
                             else
                                 continue;
@@ -468,7 +468,25 @@ namespace AttributeWrangler
                         try
                         {
                             IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
-                            GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                            if (attrib != null)
+                            {
+                                _log.Debug("Attribute is a UDA");
+                                GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                            }
+                            else
+                            {
+                                //maybe its a field attribute?
+                                attrib = instance.ConfigurableAttributes[a2item.Attribute.Replace("InputSource", "Input.InputSource").Replace("OutputDest", "Output.OutputDest")];
+                                if (attrib != null)
+                                {
+                                    _log.Debug("Attribute is a Field Attribute");
+                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                                }
+                                else
+                                {
+                                    _log.Warn("Could not locate attribute on object! Is the IO extension enabled?  Is the attribute name spelled correctly?");
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {

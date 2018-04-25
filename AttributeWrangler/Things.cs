@@ -36,7 +36,6 @@ namespace AttributeWrangler
         public bool IsInput { get; set; }
     }
 
-
     public enum PickerMode
     {
         List,

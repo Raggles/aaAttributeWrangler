@@ -65,9 +65,9 @@ namespace AttributeWrangler
             {
                 grAccess = new GRAccessAppClass();
             }
-            catch
+            catch (Exception ex)
             {
-                DispatchMessagebox("Unable to initialize GRAccess.  Do you have it installed?");
+                DispatchMessagebox("Unable to initialize GRAccess.  This can have several causes - GRAcces.dll must a registered type library.  You must have an available license - if you only have one license then you must not have the IDE open while using this tool.  On some systems, you may have to run this tool as an administrator. \n Exception Details:\n\n" + ex.ToString());
                 return;
             }
 
