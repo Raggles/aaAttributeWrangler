@@ -67,7 +67,7 @@ namespace AttributeWrangler
             }
             catch (Exception ex)
             {
-                DispatchMessagebox("Unable to initialize GRAccess.  This can have several causes - GRAcces.dll must a registered type library.  You must have an available license - if you only have one license then you must not have the IDE open while using this tool.  On some systems, you may have to run this tool as an administrator. \n Exception Details:\n\n" + ex.ToString());
+                DispatchMessagebox("Unable to initialize GRAccess.  This can have several causes - GRAcces.dll must a registered type library.  You must have an available license - if you only have one license then you must not have the IDE open while using this tool.  On some systems, you may have to run this tool as an administrator. \n\n Exception Details:\n" + ex.ToString());
                 return;
             }
 
