@@ -85,6 +85,8 @@ namespace AttributeWrangler
                     _log.Error(string.Format("{0} opertation is not supported by function {1}", op.ToString(), nameof(UpdateMxString)));
                     return;
             }
+            if (attribute.value.GetString() == newString)
+                return;
 
             _log.Info(string.Format("Updating attribute [{0}] on object [{1}] from [{2}] to [{3}]", attribute.Name, objName, attribute.value.GetString(), newString));
 
