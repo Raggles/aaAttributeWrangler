@@ -416,9 +416,9 @@ namespace AttributeWrangler
                             i.Attribute = csv["Attribute"];
                             i.Type = csv["Type"];
                             i.Address = csv["Address"];
-                            if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT")
+                            if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT" || i.Type.ToUpper() == "DI?" || i.Type.ToUpper() == "AI?" || i.Type.ToUpper() == "CO?")
                                 i.IsInput = true;
-                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT")
+                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT" || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
                                 i.IsInput = false;
                             else
                                 continue;
