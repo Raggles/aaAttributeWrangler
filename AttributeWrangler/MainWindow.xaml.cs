@@ -32,7 +32,6 @@ namespace AttributeWrangler
         private bool _abortOperation = false;
         private GRAccessApp _grAccess;
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        //private Dictionary<int, ArchestrAObject> _objects = new Dictionary<int, ArchestrAObject>();
 
         public MainWindow()
         {
@@ -415,7 +414,7 @@ namespace AttributeWrangler
                             i.Object = csv["Object"];
                             i.Attribute = csv["Attribute"];
                             i.Type = csv["Type"];
-                            i.Address = csv["Address"];
+                            i.Value = csv["Value"];
                             if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT" || i.Type.ToUpper() == "DI?" || i.Type.ToUpper() == "AI?" || i.Type.ToUpper() == "CO?")
                                 i.IsInput = true;
                             else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT" || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
@@ -467,24 +466,35 @@ namespace AttributeWrangler
                     {
                         try
                         {
-                            IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
-                            if (attrib != null)
+                            if (a2item.Type.ToLower() == "setv")
                             {
-                                _log.Debug("Attribute is a UDA");
-                                GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                                IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
+                                if (attrib != null)
+                                {
+                                    GalaxyFunctions.UpdateMxValue(_model.WhatIf, group.Key, attrib,  a2item.Value);
+                                }
                             }
                             else
                             {
-                                //maybe its a field attribute?
-                                attrib = instance.ConfigurableAttributes[a2item.Attribute.Replace("InputSource", "Input.InputSource").Replace("OutputDest", "Output.OutputDest")];
+                                IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
                                 if (attrib != null)
                                 {
-                                    _log.Debug("Attribute is a Field Attribute");
-                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                                    _log.Debug("Attribute is a UDA");
+                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Value);
                                 }
                                 else
                                 {
-                                    _log.Warn("Could not locate attribute on object! Is the IO extension enabled?  Is the attribute name spelled correctly?");
+                                    //maybe its a field attribute?
+                                    attrib = instance.ConfigurableAttributes[a2item.Attribute.Replace("InputSource", "Input.InputSource").Replace("OutputDest", "Output.OutputDest")];
+                                    if (attrib != null)
+                                    {
+                                        _log.Debug("Attribute is a Field Attribute");
+                                        GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Value);
+                                    }
+                                    else
+                                    {
+                                        _log.Warn("Could not locate attribute on object! Is the IO extension enabled?  Is the attribute name spelled correctly?");
+                                    }
                                 }
                             }
                         }
