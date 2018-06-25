@@ -359,15 +359,17 @@ namespace AttributeWrangler
                             i.Type = csv["Type"];
                             i.Value = csv["Value"];
                             if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT" || i.Type.ToUpper() == "DI?" || i.Type.ToUpper() == "AI?" || i.Type.ToUpper() == "CO?")
+                            {
                                 i.IsInput = true;
-                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT" || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
-                                i.IsInput = false;
-                            else
-                                continue;
-                            if (i.IsInput)
                                 i.Attribute += ".InputSource";
-                            else
+                            }
+                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT" || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
+                            {
+                                i.IsInput = false;
                                 i.Attribute += ".OutputDest";
+                            }
+                            else if (i.Type.ToUpper() != "SCALING")
+                                continue;
                             Items.Add(i);
                         }
                     }
