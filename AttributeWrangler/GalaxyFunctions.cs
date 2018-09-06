@@ -1,10 +1,47 @@
 ﻿using ArchestrA.GRAccess;
+using System;
 
 namespace AttributeWrangler
 {
     public static class GalaxyFunctions
     {
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        public static void UpdateMxValue(bool whatif, string objName, IAttribute attribute, string newValue)
+        {
+            try
+            {
+                switch (attribute.DataType)
+                {
+                    case MxDataType.MxBoolean:
+                        UpdateMxBool(whatif, objName, attribute, Operation.Update, bool.Parse(newValue));
+                        break;
+                    case MxDataType.MxDouble:
+                        UpdateMxDouble(whatif, objName, attribute, Operation.Update, double.Parse(newValue));
+                        break;
+                    case MxDataType.MxFloat:
+                        UpdateMxFloat(whatif, objName, attribute, Operation.Update, float.Parse(newValue));
+                        break;
+                    case MxDataType.MxInteger:
+                        UpdateMxInteger(whatif, objName, attribute, Operation.Update, int.Parse(newValue));
+                        break;
+                    case MxDataType.MxReferenceType:
+                        UpdateMxReference(whatif, objName, attribute, Operation.Update, newValue);
+                        break;
+                    case MxDataType.MxString:
+                        UpdateMxString(whatif, objName, attribute, Operation.Update, newValue);
+                        break;
+                    default:
+                        _log.Error($"Attribute data type {attribute.DataType.ToString()} is not supported by function {nameof(UpdateMxValue)}");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex.ToString());
+            }
+
+        }
 
         public static void UpdateMxReference(bool whatif, string objName, IAttribute attribute, Operation op, string newValue, string findString = "")
         {

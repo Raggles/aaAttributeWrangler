@@ -32,7 +32,6 @@ namespace AttributeWrangler
         private bool _abortOperation = false;
         private GRAccessApp _grAccess;
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        //private Dictionary<int, ArchestrAObject> _objects = new Dictionary<int, ArchestrAObject>();
 
         public MainWindow()
         {
@@ -43,6 +42,8 @@ namespace AttributeWrangler
         {
             _galaxy = galaxy;
             _grAccess = grAccess;
+            ArchestrAObject.Galaxy = galaxy;
+            ArchestrAObject.GrAccess = grAccess;
             InitializeComponent();
             _log.Info(string.Format("Connected to galaxy {0}", galaxy.Name));
         }
@@ -75,7 +76,7 @@ namespace AttributeWrangler
                     StartOperation();
                     _t = new Thread(() =>
                     {
-                        SetIOReferences(files);
+                        CsvUpdate(files);
                         _log.Info("All done");
                         FinishOperation();
                     });
@@ -83,87 +84,28 @@ namespace AttributeWrangler
                 }
             }
         }
-        
+
         private void Go()
         {
             foreach (var obj in _model.Objects)
             {
                 try
                 {
-                    if (obj.IsTemplate)
+                    obj.Checkout();
+                    try
                     {
-                        string[] tagname = new string[] { obj.Name };
-                        _log.Debug(string.Format("Querying galaxy for {0}", obj.Name));
-                        IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsTemplate, ref tagname);
-                        ICommandResult cmd = _galaxy.CommandResult;
-                        if (!cmd.Successful)
-                        {
-                            _log.Warn("QueryObjectsByName Failed:" + cmd.Text + " : " + cmd.CustomMessage);
-                            continue;
-                        }
-                        ITemplate template = (ITemplate)queryResult[1];//can throw errors here
-                        if (template.CheckoutStatus != ECheckoutStatus.notCheckedOut)
-                        {
-                            _log.Warn(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, template.checkedOutBy));
-                            continue;
-                        }
-                        _log.Debug(string.Format("Checking out {0}", obj.Name));
-                        template.CheckOut();
-                        _log.Debug(string.Format("Checked out {0}", obj.Name));
-
-                        ProcessAttributes(obj, template.ConfigurableAttributes);
-                        if (!_model.WhatIf)
-                        {
-                            _log.Debug(string.Format("Saving {0}", obj.Name));
-                            template.Save();
-                        }
-                        _log.Debug(string.Format("Checking in {0}", obj.Name));
-                        template.CheckIn();
-                        if (_abortOperation)
-                        {
-                            _log.Warn("Operation was aborted");
-                            return;
-                        }
+                        ProcessAttributes(obj, obj.Attributes);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        string[] tagname = new string[] { obj.Name };
-                        IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsInstance, ref tagname);
-                        ICommandResult cmd = _galaxy.CommandResult;
-                        if (!cmd.Successful)
-                        {
-                            _log.Warn("QueryObjectsByName Failed:" + cmd.Text + " : " + cmd.CustomMessage);
-                            continue;
-                        }
-                        IInstance instance = (IInstance)queryResult[1];//can throw errors here
-                        if (instance.CheckoutStatus != ECheckoutStatus.notCheckedOut)
-                        {
-                            _log.Warn(string.Format("Object [{0}] is already checked out by [{1}]", obj.Name, instance.checkedOutBy));
-                            continue;
-                        }
-                        _log.Debug(string.Format("Checking out {0}", obj.Name));
-                        instance.CheckOut();
-                        _log.Debug(string.Format("Checked out {0}", obj.Name));
-                        try
-                        {
-                            ProcessAttributes(obj, instance.ConfigurableAttributes);
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.Error(ex.ToString());
-                        }
-                        if (!_model.WhatIf)
-                        {
-                            _log.Debug(string.Format("Saving {0}", obj.Name));
-                            instance.Save();
-                        }
-                        _log.Debug(string.Format("Checking in {0}", obj.Name));
-                        instance.CheckIn();
-                        if (_abortOperation)
-                        {
-                            _log.Warn("Operation was aborted");
-                            return;
-                        }
+                        _log.Error(ex.ToString());
+                    }
+
+                    obj.CheckIn(!_model.WhatIf);
+                    if (_abortOperation)
+                    {
+                        _log.Warn("Operation was aborted");
+                        return;
                     }
                 }
                 catch (Exception ex)
@@ -395,7 +337,7 @@ namespace AttributeWrangler
             }
         }
 
-        public void SetIOReferences(string[] files)
+        public void CsvUpdate(string[] files)
         {
             List<ArchestrACsvItem> Items = new List<ArchestrACsvItem>();
             foreach (var file in files)
@@ -415,17 +357,19 @@ namespace AttributeWrangler
                             i.Object = csv["Object"];
                             i.Attribute = csv["Attribute"];
                             i.Type = csv["Type"];
-                            i.Address = csv["Address"];
-                            if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT" || i.Type.ToUpper() == "DI?" || i.Type.ToUpper() == "AI?" || i.Type.ToUpper() == "CO?")
+                            i.Value = csv["Value"];
+                            if (i.Type.ToUpper() == "DI" || i.Type.ToUpper() == "AI" || i.Type.ToUpper() == "CO" || i.Type.ToUpper() == "INPUT")// || i.Type.ToUpper() == "DI?" || i.Type.ToUpper() == "AI?" || i.Type.ToUpper() == "CO?")
+                            {
                                 i.IsInput = true;
-                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT" || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
-                                i.IsInput = false;
-                            else
-                                continue;
-                            if (i.IsInput)
                                 i.Attribute += ".InputSource";
-                            else
+                            }
+                            else if (i.Type.ToUpper() == "DO" || i.Type.ToUpper() == "AO" || i.Type.ToUpper() == "OUTPUT")// || i.Type.ToUpper() == "DO?" || i.Type.ToUpper() == "AO?")
+                            {
+                                i.IsInput = false;
                                 i.Attribute += ".OutputDest";
+                            }
+                            else if (i.Type.ToUpper() != "SCALING")
+                                continue;
                             Items.Add(i);
                         }
                     }
@@ -441,50 +385,61 @@ namespace AttributeWrangler
             {
                 try
                 {
+                    ArchestrAObject o = new ArchestrAObject() { Name = group.Key, IsTemplate = false };
                     if (_abortOperation)
                     {
                         _log.Warn("Operation was aborted");
                         return;
                     }
-                    _log.Info(string.Format("Checking out {0}...", group.Key));
-                    IgObjects queryResult = _galaxy.QueryObjectsByName(EgObjectIsTemplateOrInstance.gObjectIsInstance, new string[] { group.Key });
-
-                    ICommandResult cmd = _galaxy.CommandResult;
-                    if (!cmd.Successful)
-                    {
-                        _log.Info(string.Format("Failed to check out {0}:{1}:{2}", group.Key, cmd.Text, cmd.CustomMessage));
-                    }
-
-                    IInstance instance = (IInstance)queryResult[1];//can throw errors here
-                    if (instance.CheckoutStatus != ECheckoutStatus.notCheckedOut)
-                    {
-                        _log.Info(string.Format("Object [{0}] is already checked out by [{1}]", group.Key, instance.checkedOutBy));
+                    if (!o.Checkout())
+                        continue;
+                    var attributes = o.Attributes;
+                    if (attributes == null)
                         return;
-                    }
-
-                    instance.CheckOut();
                     foreach (var a2item in group)
                     {
                         try
                         {
-                            IAttribute attrib = instance.ConfigurableAttributes[a2item.Attribute];
-                            if (attrib != null)
+                            if (a2item.Type.ToLower() == "scaling")
                             {
-                                _log.Debug("Attribute is a UDA");
-                                GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                                IAttribute attrib = attributes[a2item.Attribute];
+                                if (attrib == null)
+                                {
+                                    attrib = attributes[ArchestrAObject.GetRootAttribute(a2item.Attribute)];
+                                    if (attrib != null)
+                                    {
+                                        if (!o.AddPrimitive(attrib, Primitive.scalingextension))
+                                            continue;
+                                        attributes = o.Attributes;
+                                        attrib = attributes[a2item.Attribute];
+                                    }
+                                }
+                                if (attrib != null)
+                                { 
+                                    GalaxyFunctions.UpdateMxValue(_model.WhatIf, group.Key, attrib,  a2item.Value);
+                                }
                             }
                             else
                             {
-                                //maybe its a field attribute?
-                                attrib = instance.ConfigurableAttributes[a2item.Attribute.Replace("InputSource", "Input.InputSource").Replace("OutputDest", "Output.OutputDest")];
+                                IAttribute attrib = attributes[a2item.Attribute];
                                 if (attrib != null)
                                 {
-                                    _log.Debug("Attribute is a Field Attribute");
-                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Address);
+                                    _log.Debug("Attribute is a UDA");
+                                    GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Value);
                                 }
                                 else
                                 {
-                                    _log.Warn("Could not locate attribute on object! Is the IO extension enabled?  Is the attribute name spelled correctly?");
+                                    //maybe its a field attribute?
+                                    attrib = attributes[a2item.Attribute.Replace("InputSource", "Input.InputSource").Replace("OutputDest", "Output.OutputDest")];
+                                    if (attrib != null)
+                                    {
+                                        _log.Debug("Attribute is a Field Attribute");
+                                        GalaxyFunctions.UpdateMxReference(_model.WhatIf, group.Key, attrib, Operation.Update, a2item.Value);
+                                    }
+                                    else
+                                    {
+                                        _log.Warn("Could not locate attribute on object! Is the IO extension enabled?  Is the attribute name spelled correctly?");
+                                    }
                                 }
                             }
                         }
@@ -493,10 +448,7 @@ namespace AttributeWrangler
                             _log.Error(ex.ToString());
                         }
                     }
-                    _log.Info("Saving " + group.Key + "...");
-                    instance.Save();
-                    _log.Info("Checking in " + group.Key + "...");
-                    instance.CheckIn();
+                    o.CheckIn(!_model.WhatIf);
                 }
                 catch (Exception ex)
                 {
