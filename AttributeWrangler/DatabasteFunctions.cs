@@ -78,12 +78,8 @@ namespace AttributeWrangler
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    
-                    using (var command = new SqlCommand("internal_get_all_areas", conn)
+                    using (var command = new SqlCommand("select g.gobject_id, g.tag_name, g.area_gobject_id from gobject g with(nolock) inner join template_definition td with(nolock) on g.template_definition_id = td.template_definition_id where td.category_id = 13 and g.is_template = 0", conn))
                     {
-                        CommandType = CommandType.StoredProcedure
-                    })
-                    {                     
                         var reader = command.ExecuteReader();
                         while (reader.Read())
                         {
